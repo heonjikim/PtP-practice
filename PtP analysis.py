@@ -201,11 +201,8 @@ print("\nReverse-scored PtP data:")
 print(ptp_scored.head())
 
 # Cronbach's alpha reliability for PtP
-
 ptp_items = ptp_scored.copy()
-
 while True:
-
     # Current alpha
     alpha = pg.cronbach_alpha(ptp_items)[0].item()
 
@@ -218,9 +215,9 @@ while True:
 
     # Find items that meet removal criteria
     candidates = {}
-
     for item in ptp_items.columns:
 
+        # Remove the item temporarily
         remaining = ptp_items.drop(columns=item)
 
         # Corrected item-total correlation
@@ -235,15 +232,18 @@ while True:
             remaining
         )[0].item()
 
+        # Item is considered for removal if:
+        # 1. Its corrected item-total correlation is below .30
+        # 2. Removing it increases Cronbach's alpha
         if r < 0.30 and alpha_deleted > alpha:
             candidates[item] = (r, alpha_deleted)
 
-    # Stop if no items qualify
+    # Stop if no items qualify for removal
     if not candidates:
         print("No items meet the removal criteria. Stopping.")
         break
 
-    # Remove item producing the highest alpha
+    # Remove the item that produces the largest increase in alpha
     item = max(
         candidates,
         key=lambda x: candidates[x][1]
@@ -256,7 +256,7 @@ while True:
         f"r = {r:.3f}, "
         f"alpha if deleted = {alpha_deleted:.3f}"
     )
-
+    # Permanently remove the selected item
     ptp_items = ptp_items.drop(columns=item)
 
 
